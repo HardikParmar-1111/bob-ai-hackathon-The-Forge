@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Clinical Trial Risk Monitor"
+description = "A polished frontend prototype for enterprise clinical-trial oversight, helping risk managers and site administrators review sites, findings, protocol checks, CAPA, reports, and audit activity with realistic fictional data."
+version = "1.0.0"
+id = "artifacts/clinical-trial-risk-monitor"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 21121
+
+[services.development]
+run = "pnpm --filter @workspace/clinical-trial-risk-monitor run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/clinical-trial-risk-monitor", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/clinical-trial-risk-monitor/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "21121"
+BASE_PATH = "/"
