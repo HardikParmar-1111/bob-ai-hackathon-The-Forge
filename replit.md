@@ -1,6 +1,6 @@
-# [Project name]
+# Clinical Trial Risk Monitor
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Frontend-only enterprise oversight workspace for reviewing fictional clinical-trial sites, findings, protocol checks, CAPA, reports, and coded participant records.
 
 ## Run & Operate
 
@@ -22,15 +22,22 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/clinical-trial-risk-monitor/src/App.tsx` — routed application shell and page composition
+- `artifacts/clinical-trial-risk-monitor/src/data/mockData.ts` — fictional domain records and chart data
+- `artifacts/clinical-trial-risk-monitor/src/lib/mockDataService.ts` — service boundary for replacing mock records with API calls later
+- `artifacts/clinical-trial-risk-monitor/src/lib/semantics.ts` — centralized status-to-semantic presentation mapping
+- `artifacts/clinical-trial-risk-monitor/src/index.css` — shared theme tokens, responsive shell behavior, and reduced-motion support
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The first release is frontend-only and uses fictional data; no clinical decisions, authentication, or backend writes are represented.
+- Pages consume the `ClinicalTrialDataService` contract so a future API-backed repository can replace mock data without rewriting UI components.
+- Risk and workflow language is deliberately separated between automated checks, review-required signals, and confirmed deviations.
+- Theme, role, and sidebar preferences persist locally to make the demo feel stable across sessions without pretending to provide authentication.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Risk managers can review portfolio-level site risk, findings, protocol rules, CAPA, reports, and audit history. Site administrators can preview coded participant records and enter visit, dosing, and adverse-event records through validated prototype forms.
 
 ## User preferences
 

@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from 'react';
+import { type ReactNode, useEffect, useMemo, useState } from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ErrorBoundary } from '@/components/error-boundary';
 import { Toaster } from '@/components/ui/toaster';
@@ -11,12 +11,23 @@ import { Link, Route, Switch, Router as WouterRouter, useLocation, useParams } f
 import {
   Activity, AlertCircle, AlertTriangle, ArrowDown, ArrowLeft, ArrowRight, Bell, CalendarDays, Check, CheckCircle2, ChevronDown, ChevronRight, ClipboardCheck, Clock3, Download, FileBarChart2, FileCheck2, Flag, FlaskConical, GitBranch, LayoutDashboard, LogOut, Menu, Moon, MoreHorizontal, Plus, RefreshCcw, Search, Settings, ShieldCheck, SlidersHorizontal, Sparkles, Sun, UsersRound, X
 } from 'lucide-react';
-import {
-  adverseEvents, audit, capas, dosingRecords, findings, notifications, participants, rules, sites, trendData, trials, visitRecords,
-  type AdverseEvent, type RiskLevel, type VisitRecord
-} from '@/data/mockData';
+import { trendData, type AdverseEvent, type RiskLevel, type VisitRecord } from '@/data/mockData';
+import { mockDataService } from '@/lib/mockDataService';
+import { toast } from '@/hooks/use-toast';
 
 const queryClient = new QueryClient();
+
+const adverseEvents = mockDataService.getAdverseEvents();
+const audit = mockDataService.getAuditActivity();
+const capas = mockDataService.getCAPA();
+const dosingRecords = mockDataService.getDosingRecords();
+const findings = mockDataService.getFindings();
+const notifications = mockDataService.getNotifications();
+const participants = mockDataService.getParticipants();
+const rules = mockDataService.getProtocolRules();
+const sites = mockDataService.getSites();
+const trials = mockDataService.getTrials();
+const visitRecords = mockDataService.getVisitRecords();
 
 const riskTone: Record<RiskLevel, string> = {
   Low: 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-800',
@@ -57,10 +68,14 @@ function AppShell({ children, role, setRole, dark, setDark }: { children: ReactN
   const [mobileOpen, setMobileOpen] = useState(false);
   const [roleOpen, setRoleOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(() => typeof window !== 'undefined' && window.localStorage.getItem('meridian-sidebar-collapsed') === 'true');
+  useEffect(() => {
+    window.localStorage.setItem('meridian-sidebar-collapsed', String(sidebarCollapsed));
+  }, [sidebarCollapsed]);
   const unread = notifications.filter((n) => !n.read).length;
   const pageTitle = location === '/dashboard' ? 'Portfolio overview' : (location.split('/')[1] || 'Dashboard').replace('-', ' ');
   const go = (path: string) => { navigate(path); setMobileOpen(false); };
-  return <div className="min-h-[100dvh] bg-background">
+  return <div className="min-h-[100dvh] bg-background" data-sidebar-collapsed={sidebarCollapsed}>
     <aside className={cn('fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground transition-transform lg:translate-x-0', mobileOpen ? 'translate-x-0' : '-translate-x-full')}>
       <div className="flex h-[72px] items-center justify-between border-b border-sidebar-border px-5">
         <Link href="/dashboard" className="flex items-center gap-3" data-testid="link-brand"><span className="grid h-8 w-8 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"><Activity size={17} strokeWidth={2.5} /></span><span><span className="block font-display text-sm font-extrabold tracking-tight text-white">Meridian</span><span className="block font-mono-data text-[9px] uppercase tracking-[.18em] text-sidebar-foreground/55">Trial oversight</span></span></Link>
@@ -70,6 +85,7 @@ function AppShell({ children, role, setRole, dark, setDark }: { children: ReactN
       <nav className="flex-1 overflow-y-auto px-3 py-4">{navGroups.map((group) => <div key={group.label} className="mb-5"><p className="px-3 pb-2 font-mono-data text-[9px] uppercase tracking-[.19em] text-sidebar-foreground/40">{group.label}</p>{group.items.map((item) => { const Icon = item.icon; const active = location === item.href || (item.href !== '/dashboard' && location.startsWith(item.href + '/')); return <Link key={item.href} href={item.href} onClick={() => setMobileOpen(false)} data-testid={`link-nav-${item.label.toLowerCase().replaceAll(' ', '-')}`} className={cn('group mb-0.5 flex items-center gap-3 rounded-md px-3 py-2.5 text-xs font-medium transition-colors', active ? 'bg-sidebar-primary text-sidebar-primary-foreground shadow-sm' : 'text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white')}><Icon size={16} /><span className="flex-1">{item.label}</span>{item.count && <span className={cn('rounded-full px-1.5 py-0.5 text-[10px]', active ? 'bg-sidebar-primary-foreground/15' : 'bg-sidebar-foreground/10')}>{item.count}</span>}</Link>; })}</div>)}</nav>
       <div className="border-t border-sidebar-border p-3"><Link href="/settings" data-testid="link-nav-settings" className="flex items-center gap-3 rounded-md px-3 py-2.5 text-xs text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-white"><Settings size={16} /> Settings</Link><div className="mt-3 flex items-center gap-2 border-t border-sidebar-border px-2 pt-3"><span className="grid h-7 w-7 place-items-center rounded-full bg-slate-600 text-[10px] font-bold text-white">MO</span><span className="min-w-0 flex-1"><span className="block truncate text-xs font-semibold text-white">Maya Ortiz</span><span className="block truncate text-[10px] text-sidebar-foreground/50">maya.ortiz@meridian.test</span></span><LogOut size={14} className="text-sidebar-foreground/45" /></div></div>
     </aside>
+    <button onClick={() => setSidebarCollapsed((collapsed) => !collapsed)} aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} title={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} className={cn('fixed bottom-4 z-50 hidden h-8 w-8 items-center justify-center rounded-full border border-sidebar-border bg-sidebar text-sidebar-foreground shadow-lg transition-all lg:flex', sidebarCollapsed ? 'left-[54px]' : 'left-[230px]')} data-testid="button-sidebar-toggle"><ChevronRight size={14} className={cn('transition-transform', !sidebarCollapsed && 'rotate-180')} /></button>
     {mobileOpen && <button aria-label="Close mobile navigation" onClick={() => setMobileOpen(false)} className="fixed inset-0 z-30 bg-slate-950/40 lg:hidden" data-testid="button-mobile-overlay" />}
     <div className="lg:pl-[248px]">
       <header className="sticky top-0 z-20 flex h-[72px] items-center gap-3 border-b border-border bg-background/95 px-4 backdrop-blur sm:px-7"><button aria-label="Open navigation" onClick={() => setMobileOpen(true)} className="rounded-md p-2 hover:bg-secondary lg:hidden" data-testid="button-open-navigation"><Menu size={19} /></button><div className="min-w-0 flex-1"><div className="hidden items-center gap-2 text-[11px] text-muted-foreground sm:flex"><span>Meridian workspace</span><ChevronRight size={12} /><span className="capitalize">{pageTitle}</span></div><p className="truncate font-display text-sm font-bold capitalize sm:hidden">{pageTitle}</p></div><button onClick={() => setSearchOpen((x) => !x)} className="rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="Search workspace" data-testid="button-search"><Search size={18} /></button><Link href="/notifications" className="relative rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="Notifications" data-testid="link-notifications"><Bell size={18} />{unread > 0 && <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-accent ring-2 ring-background" />}</Link><button onClick={() => setDark(!dark)} className="rounded-md p-2 text-muted-foreground hover:bg-secondary hover:text-foreground" aria-label="Toggle theme" data-testid="button-theme-toggle">{dark ? <Sun size={17} /> : <Moon size={17} />}</button><button className="hidden items-center gap-2 rounded-md border border-border px-2 py-1.5 text-left hover:bg-secondary sm:flex" data-testid="button-user-menu"><span className="grid h-6 w-6 place-items-center rounded-full bg-primary text-[9px] font-bold text-primary-foreground">MO</span><ChevronDown size={13} className="text-muted-foreground" /></button></header>
@@ -137,7 +153,9 @@ function SimpleListPage({ kind }: { kind: 'rules' | 'capa' | 'audit' | 'notifica
 
 function DetailPage({ type }: { type: 'site' | 'participant' | 'finding' | 'rule' | 'capa' }) {
   const params = useParams(); const id = Object.values(params)[0] || '';
-  const site = sites.find((s) => s.id === id) || sites[0]; const participant = participants.find((p) => p.id === id) || participants[0]; const finding = findings.find((f) => f.id === id) || findings[0]; const rule = rules.find((r) => r.id === id) || rules[0]; const capa = capas.find((c) => c.id === id) || capas[0];
+  const siteMatch = sites.find((s) => s.id === id); const participantMatch = participants.find((p) => p.id === id); const findingMatch = findings.find((f) => f.id === id); const ruleMatch = rules.find((r) => r.id === id); const capaMatch = capas.find((c) => c.id === id);
+  if ((type === 'site' && !siteMatch) || (type === 'participant' && !participantMatch) || (type === 'finding' && !findingMatch) || (type === 'rule' && !ruleMatch) || (type === 'capa' && !capaMatch)) return <NotFound />;
+  const site = siteMatch ?? sites[0]; const participant = participantMatch ?? participants[0]; const finding = findingMatch ?? findings[0]; const rule = ruleMatch ?? rules[0]; const capa = capaMatch ?? capas[0];
   const entity = type === 'site' ? site : type === 'participant' ? participant : type === 'finding' ? finding : type === 'rule' ? rule : capa;
   const title = type === 'site' ? site.name : type === 'participant' ? participant.id : type === 'finding' ? finding.title : type === 'rule' ? rule.name : capa.title;
   const code = type === 'site' ? site.id : type === 'participant' ? participant.trial : type === 'finding' ? finding.id : type === 'rule' ? rule.id : capa.id;
@@ -157,9 +175,58 @@ function SettingsPage({ dark, setDark }: { dark: boolean; setDark: (v: boolean) 
   return <div className="animate-rise"><SectionHeading eyebrow="Workspace / preferences" title="Settings" description="Configure the local prototype experience and review workspace preferences." /><div className="grid gap-5 lg:grid-cols-[220px_1fr]"><Card className="h-fit p-2"><button className="flex w-full items-center gap-2 rounded-md bg-primary/10 px-3 py-2.5 text-left text-xs font-semibold text-primary" data-testid="button-settings-general"><SlidersHorizontal size={14} /> General</button><button className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-left text-xs text-muted-foreground hover:bg-secondary" data-testid="button-settings-notifications"><Bell size={14} /> Notifications</button><button className="flex w-full items-center gap-2 rounded-md px-3 py-2.5 text-left text-xs text-muted-foreground hover:bg-secondary" data-testid="button-settings-access"><UsersRound size={14} /> Access & roles</button></Card><div className="space-y-5"><Card className="p-5"><h2 className="font-display text-sm font-bold">Workspace appearance</h2><p className="mt-1 text-xs text-muted-foreground">Choose how Meridian appears on this device.</p><div className="mt-5 flex items-center justify-between border-t border-border pt-4"><div><p className="text-xs font-semibold">Theme</p><p className="mt-1 text-[11px] text-muted-foreground">Current: {dark ? 'Dark' : 'Light'} mode</p></div><button onClick={() => setDark(!dark)} className="flex items-center gap-2 rounded-md border border-border px-3 py-2 text-xs font-semibold hover:bg-secondary" data-testid="button-settings-theme">{dark ? <Sun size={14} /> : <Moon size={14} />}{dark ? 'Switch to light' : 'Switch to dark'}</button></div></Card><Card className="p-5"><h2 className="font-display text-sm font-bold">Demo workspace</h2><p className="mt-1 text-xs text-muted-foreground">Data is fictional and centralized for this frontend prototype.</p><div className="mt-5 grid gap-3 sm:grid-cols-3">{[['Trial portfolio', '2 active trials'], ['Mock records', '42 active sites'], ['Data refresh', 'Local only']].map(([label, value]) => <div key={label} className="rounded-md bg-secondary/50 p-3"><p className="text-[10px] uppercase tracking-wider text-muted-foreground">{label}</p><p className="mt-1 text-xs font-semibold">{value}</p></div>)}</div></Card></div></div></div>;
 }
 
+const loginSchema = z.object({
+  email: z.string().email('Enter a valid demo email'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+});
+type LoginValues = z.infer<typeof loginSchema>;
+
 function Login() {
-  const [, navigate] = useLocation(); const [role, setRole] = useState('Risk Manager');
-  return <div className="grid min-h-[100dvh] lg:grid-cols-[1.05fr_.95fr]"><div className="relative hidden overflow-hidden bg-sidebar p-12 text-white lg:flex lg:flex-col lg:justify-between"><div className="absolute inset-0 grid-paper opacity-[.12]" /><div className="relative"><div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"><Activity size={18} /></span><span><span className="block font-display text-sm font-extrabold">Meridian</span><span className="block font-mono-data text-[9px] uppercase tracking-[.18em] text-sidebar-foreground/55">Trial oversight</span></span></div><div className="mt-28 max-w-md"><p className="font-mono-data text-[10px] uppercase tracking-[.2em] text-sidebar-primary">Clinical trial risk monitor</p><h1 className="mt-4 font-display text-4xl font-extrabold leading-tight tracking-tight">A clearer view of what needs attention.</h1><p className="mt-5 text-sm leading-relaxed text-sidebar-foreground/65">A considered workspace for site risk, findings, CAPA, and protocol oversight across active trials.</p></div></div><div className="relative flex items-center gap-2 text-[11px] text-sidebar-foreground/45"><ShieldCheck size={14} /> Illustrative prototype · no real patient data</div></div><div className="flex items-center justify-center bg-background px-5 py-10 sm:px-10"><div className="w-full max-w-sm animate-rise"><div className="mb-10 lg:hidden"><span className="inline-flex items-center gap-2 font-display text-sm font-extrabold"><span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground"><Activity size={17} /></span>Meridian</span></div><p className="font-mono-data text-[10px] uppercase tracking-[.18em] text-primary">Workspace access</p><h2 className="mt-2 font-display text-2xl font-extrabold">Welcome back</h2><p className="mt-2 text-sm text-muted-foreground">Choose a demo persona to enter the oversight workspace.</p><div className="mt-7 space-y-3"><button onClick={() => setRole('Risk Manager')} className={cn('flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-all', role === 'Risk Manager' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-secondary')} data-testid="button-login-risk-manager"><span className="grid h-9 w-9 place-items-center rounded-full bg-primary/10 text-xs font-bold text-primary">RM</span><span className="flex-1"><span className="block text-sm font-bold">Risk Manager</span><span className="mt-0.5 block text-xs text-muted-foreground">Portfolio-wide review and reporting</span></span>{role === 'Risk Manager' && <CheckCircle2 size={17} className="text-primary" />}</button><button onClick={() => setRole('Site Administrator')} className={cn('flex w-full items-center gap-3 rounded-lg border p-4 text-left transition-all', role === 'Site Administrator' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-secondary')} data-testid="button-login-site-admin"><span className="grid h-9 w-9 place-items-center rounded-full bg-secondary text-xs font-bold text-primary">SA</span><span className="flex-1"><span className="block text-sm font-bold">Site Administrator</span><span className="mt-0.5 block text-xs text-muted-foreground">Enter and review site records</span></span>{role === 'Site Administrator' && <CheckCircle2 size={17} className="text-primary" />}</button></div><Button onClick={() => navigate('/dashboard')} className="mt-7 h-11 w-full" testId="button-enter-workspace">Enter demo workspace <ArrowRight size={15} /></Button><p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">By continuing, you acknowledge this is a fictional workflow demonstration. No authentication or clinical services are connected.</p></div></div></div>;
+  const [, navigate] = useLocation();
+  const [role, setRole] = useState('Risk Manager');
+  const [rememberDevice, setRememberDevice] = useState(true);
+  const [demoError, setDemoError] = useState('');
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: 'maya.ortiz@meridian.test', password: 'demo-access' },
+  });
+  const onSubmit = async (values: LoginValues) => {
+    await new Promise((resolve) => window.setTimeout(resolve, 450));
+    if (values.email !== 'maya.ortiz@meridian.test' || values.password !== 'demo-access') {
+      setDemoError('Demo access not recognized. Use the prefilled demo credentials.');
+      return;
+    }
+    setDemoError('');
+    navigate('/dashboard');
+  };
+
+  return <div className="grid min-h-[100dvh] lg:grid-cols-[1.05fr_.95fr]">
+    <div className="relative hidden overflow-hidden bg-sidebar p-12 text-white lg:flex lg:flex-col lg:justify-between">
+      <div className="absolute inset-0 grid-paper opacity-[.12]" />
+      <div className="relative">
+        <div className="flex items-center gap-3"><span className="grid h-9 w-9 place-items-center rounded-md bg-sidebar-primary text-sidebar-primary-foreground"><Activity size={18} /></span><span><span className="block font-display text-sm font-extrabold">Meridian</span><span className="block font-mono-data text-[9px] uppercase tracking-[.18em] text-sidebar-foreground/55">Trial oversight</span></span></div>
+        <div className="mt-28 max-w-md"><p className="font-mono-data text-[10px] uppercase tracking-[.2em] text-sidebar-primary">Clinical trial risk monitor</p><h1 className="mt-4 font-display text-4xl font-extrabold leading-tight tracking-tight">A clearer view of what needs attention.</h1><p className="mt-5 text-sm leading-relaxed text-sidebar-foreground/65">A considered workspace for site risk, findings, CAPA, and protocol oversight across active trials.</p></div>
+      </div>
+      <div className="relative flex items-center gap-2 text-[11px] text-sidebar-foreground/45"><ShieldCheck size={14} /> Illustrative prototype · no real patient data</div>
+    </div>
+    <div className="flex items-center justify-center bg-background px-5 py-10 sm:px-10">
+      <div className="w-full max-w-sm animate-rise">
+        <div className="mb-10 lg:hidden"><span className="inline-flex items-center gap-2 font-display text-sm font-extrabold"><span className="grid h-8 w-8 place-items-center rounded-md bg-primary text-primary-foreground"><Activity size={17} /></span>Meridian</span></div>
+        <p className="font-mono-data text-[10px] uppercase tracking-[.18em] text-primary">Workspace access</p>
+        <h2 className="mt-2 font-display text-2xl font-extrabold">Welcome back</h2>
+        <p className="mt-2 text-sm text-muted-foreground">Use demo access to review the fictional oversight workspace.</p>
+        <form onSubmit={handleSubmit(onSubmit)} className="mt-7 space-y-4" noValidate>
+          <label className="block text-xs font-semibold">Email<input {...register('email')} type="email" autoComplete="email" className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" aria-invalid={Boolean(errors.email)} data-testid="input-login-email" />{errors.email && <span className="mt-1 block text-[11px] text-red-600">{errors.email.message}</span>}</label>
+          <label className="block text-xs font-semibold">Password<input {...register('password')} type="password" autoComplete="current-password" className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus:ring-2 focus:ring-ring" aria-invalid={Boolean(errors.password)} data-testid="input-login-password" />{errors.password && <span className="mt-1 block text-[11px] text-red-600">{errors.password.message}</span>}</label>
+          <div className="flex items-center justify-between gap-3 text-xs"><label className="inline-flex items-center gap-2 font-medium text-muted-foreground"><input type="checkbox" checked={rememberDevice} onChange={(event) => setRememberDevice(event.target.checked)} className="h-3.5 w-3.5 accent-primary" data-testid="checkbox-remember-device" />Remember this device</label><button type="button" onClick={() => toast({ title: 'Password recovery unavailable', description: 'Authentication is not connected in prototype mode.' })} className="font-semibold text-primary hover:underline" data-testid="button-forgot-password">Forgot password?</button></div>
+          <div className="space-y-3 border-t border-border pt-5"><p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Demo persona</p><div className="grid gap-2 sm:grid-cols-2"><button type="button" onClick={() => setRole('Risk Manager')} className={cn('rounded-md border p-3 text-left transition-all', role === 'Risk Manager' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-secondary')} data-testid="button-login-risk-manager"><span className="block text-xs font-bold">Risk Manager</span><span className="mt-1 block text-[10px] text-muted-foreground">Portfolio access</span></button><button type="button" onClick={() => setRole('Site Administrator')} className={cn('rounded-md border p-3 text-left transition-all', role === 'Site Administrator' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'border-border hover:bg-secondary')} data-testid="button-login-site-admin"><span className="block text-xs font-bold">Site Administrator</span><span className="mt-1 block text-[10px] text-muted-foreground">SITE-014 access</span></button></div></div>
+          {demoError && <div role="alert" className="flex items-start gap-2 rounded-md border border-red-200 bg-red-50 p-3 text-xs text-red-800 dark:border-red-900 dark:bg-red-950/25 dark:text-red-200"><AlertCircle size={15} className="mt-0.5 shrink-0" />{demoError}</div>}
+          <Button type="submit" disabled={isSubmitting} className="h-11 w-full" testId="button-enter-workspace">{isSubmitting ? <><RefreshCcw size={14} className="animate-spin" /> Checking demo access…</> : <>Enter demo workspace <ArrowRight size={15} /></>}</Button>
+        </form>
+        <p className="mt-6 text-center text-[11px] leading-relaxed text-muted-foreground">Prototype mode · {role} · {rememberDevice ? 'Device preference saved locally.' : 'Device preference will not be saved.'} No authentication or clinical services are connected.</p>
+      </div>
+    </div>
+  </div>;
 }
 
 function NotFound() { return <div className="flex min-h-[70vh] flex-col items-center justify-center text-center"><AlertCircle size={28} className="text-muted-foreground" /><h1 className="mt-4 font-display text-xl font-bold">Page not found</h1><p className="mt-1 text-sm text-muted-foreground">The requested workspace route does not exist.</p><Link href="/dashboard" className="mt-5 text-xs font-semibold text-primary hover:underline" data-testid="link-not-found-dashboard">Return to dashboard</Link></div>; }
@@ -167,8 +234,22 @@ function NotFound() { return <div className="flex min-h-[70vh] flex-col items-ce
 function RoutedErrorBoundary({ children }: { children: ReactNode }) { const [location] = useLocation(); return <ErrorBoundary resetKey={location}>{children}</ErrorBoundary>; }
 
 function Router() {
-  const [role, setRole] = useState('Risk Manager'); const [dark, setDark] = useState(false);
-  if (typeof document !== 'undefined') document.documentElement.classList.toggle('dark', dark);
+  const [role, setRole] = useState(() => typeof window !== 'undefined' ? window.localStorage.getItem('meridian-role') ?? 'Risk Manager' : 'Risk Manager');
+  const [dark, setDark] = useState(() => typeof window !== 'undefined' && window.localStorage.getItem('meridian-theme') === 'dark');
+  const [location] = useLocation();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    window.localStorage.setItem('meridian-theme', dark ? 'dark' : 'light');
+  }, [dark]);
+
+  useEffect(() => {
+    window.localStorage.setItem('meridian-role', role);
+    document.title = location === '/login'
+      ? 'Workspace access · Clinical Trial Risk Monitor'
+      : `${location === '/' || location === '/dashboard' ? 'Portfolio overview' : 'Clinical Trial Risk Monitor'} · Meridian`;
+  }, [location, role]);
+
   return <Switch><Route path="/login" component={Login} /><Route><AppShell role={role} setRole={setRole} dark={dark} setDark={setDark}><Switch><Route path="/" component={Dashboard} /><Route path="/dashboard" component={Dashboard} /><Route path="/sites" component={SitesPage} /><Route path="/sites/:id"><DetailPage type="site" /></Route><Route path="/participants" component={ParticipantsPage} /><Route path="/participants/:id"><DetailPage type="participant" /></Route><Route path="/visit-records" component={() => <GenericRecordsPage kind="visit" />} /><Route path="/visit-records/new" component={() => <RecordForm kind="visit" />} /><Route path="/dosing" component={() => <GenericRecordsPage kind="dosing" />} /><Route path="/dosing/new" component={() => <RecordForm kind="dosing" />} /><Route path="/adverse-events" component={() => <GenericRecordsPage kind="ae" />} /><Route path="/adverse-events/new" component={() => <RecordForm kind="ae" />} /><Route path="/findings" component={FindingsPage} /><Route path="/findings/:id"><DetailPage type="finding" /></Route><Route path="/protocol-rules" component={() => <SimpleListPage kind="rules" />} /><Route path="/protocol-rules/:id"><DetailPage type="rule" /></Route><Route path="/capa" component={() => <SimpleListPage kind="capa" />} /><Route path="/capa/:id"><DetailPage type="capa" /></Route><Route path="/reports" component={() => <SimpleListPage kind="reports" />} /><Route path="/audit" component={() => <SimpleListPage kind="audit" />} /><Route path="/notifications" component={() => <SimpleListPage kind="notifications" />} /><Route path="/settings" component={() => <SettingsPage dark={dark} setDark={setDark} />} /><Route component={NotFound} /></Switch></AppShell></Route></Switch>;
 }
 

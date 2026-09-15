@@ -1,0 +1,871 @@
+You are the senior frontend engineer responsible for turning this existing project into a production-quality frontend for:
+
+# Clinical Trial Risk Monitor
+
+IMPORTANT:
+
+This is currently FRONTEND ONLY.
+
+Do not implement Supabase, PostgreSQL, external APIs, Python services, AI APIs, or real clinical processing yet.
+
+Use the existing mock-data architecture and make the frontend production-quality and backend-ready.
+
+Do not replace the entire application unnecessarily.
+
+First inspect the existing codebase and understand:
+
+* project structure
+* routes
+* components
+* styles
+* dependencies
+* current UI
+* mock-data architecture
+* TypeScript types
+* existing errors
+* existing responsiveness
+
+Before changing anything, create a concise implementation plan based on the actual codebase.
+
+Then execute the work.
+
+---
+
+# PRIMARY OBJECTIVE
+
+Turn the current Clinical Trial Risk Monitor frontend into a polished enterprise clinical-trial oversight application.
+
+The result should look like professional healthcare/clinical enterprise software, not an AI-generated template.
+
+---
+
+# TECHNOLOGY REQUIREMENTS
+
+Use the project's existing stack where possible.
+
+Preferred:
+
+* Next.js App Router
+* TypeScript
+* Tailwind CSS
+* shadcn/ui
+* Lucide icons
+* Recharts
+* React Hook Form
+* Zod
+
+Do not add dependencies unless they provide clear value.
+
+Keep the application maintainable.
+
+---
+
+# CRITICAL FRONTEND ARCHITECTURE
+
+Separate:
+
+UI components
+
+from
+
+mock data
+
+from
+
+types
+
+from
+
+business-facing presentation utilities
+
+from
+
+future service interfaces
+
+Create a clean structure similar to:
+
+app/
+
+components/
+
+lib/
+
+types/
+
+data/
+
+hooks/
+
+features/
+
+Do not scatter mock records directly throughout page JSX.
+
+---
+
+# MOCK DATA SERVICE
+
+Create a centralized mock repository/service.
+
+For example:
+
+getTrials()
+
+getSites()
+
+getSite(id)
+
+getParticipants()
+
+getParticipant(id)
+
+getFindings()
+
+getFinding(id)
+
+getProtocolRules()
+
+getProtocolRule(id)
+
+getCAPA()
+
+getCAPADetail(id)
+
+getAuditActivity()
+
+getNotifications()
+
+This must be easy to replace later with Supabase/API functions.
+
+Create strong TypeScript types.
+
+Do not use any unnecessarily.
+
+---
+
+# ROUTES
+
+Verify that these routes work:
+
+/login
+
+/dashboard
+
+/sites
+
+/sites/[id]
+
+/participants
+
+/participants/[id]
+
+/visit-records
+
+/visit-records/new
+
+/dosing
+
+/dosing/new
+
+/adverse-events
+
+/adverse-events/new
+
+/findings
+
+/findings/[id]
+
+/protocol-rules
+
+/protocol-rules/[id]
+
+/capa
+
+/capa/[id]
+
+/reports
+
+/audit
+
+/notifications
+
+/settings
+
+No dead links.
+
+No broken navigation.
+
+No blank routes.
+
+---
+
+# APPLICATION SHELL
+
+Create a reusable:
+
+AppShell
+
+Sidebar
+
+Topbar
+
+Breadcrumbs
+
+PageHeader
+
+MobileNavigation
+
+UserMenu
+
+NotificationCenter
+
+ThemeToggle
+
+The sidebar must support:
+
+* expanded state
+* collapsed state
+* mobile drawer
+
+Persist sidebar preference locally.
+
+---
+
+# DESIGN QUALITY
+
+Do a full visual refinement pass.
+
+The visual language must feel:
+
+* professional
+* clinical
+* enterprise
+* trustworthy
+* information-dense
+* modern
+* restrained
+
+Avoid:
+
+* generic dashboard appearance
+* excessive gradients
+* excessive shadows
+* huge cards
+* meaningless animations
+* decorative illustrations
+* inconsistent spacing
+* random colors
+* inconsistent border radii
+* oversized headings
+
+Use a consistent design system.
+
+---
+
+# RISK SEMANTICS
+
+Create reusable semantic components:
+
+RiskBadge
+
+SeverityBadge
+
+StatusBadge
+
+FindingStatusBadge
+
+CAPAStatusBadge
+
+Never encode severity colors manually throughout individual pages.
+
+Centralize status/semantic configuration.
+
+Do not depend on color alone.
+
+---
+
+# TABLE QUALITY
+
+Improve every important table.
+
+Requirements:
+
+* sorting
+* filtering
+* search
+* pagination
+* responsive overflow
+* column alignment
+* readable density
+* hover state
+* row selection where useful
+* action menu
+* empty state
+* loading state
+
+Tables must remain usable with long text.
+
+---
+
+# FORMS
+
+Every form must have:
+
+* labels
+* placeholders where useful
+* validation
+* inline errors
+* disabled submit state
+* loading state
+* success feedback
+* cancel action
+* confirmation where appropriate
+
+Use React Hook Form + Zod if those libraries are already available.
+
+Do not create fake form behavior that looks broken.
+
+---
+
+# DASHBOARD
+
+Make /dashboard the strongest page visually.
+
+It must contain:
+
+KPI overview
+
+Site risk overview
+
+Findings trend
+
+Sites requiring attention
+
+Recent findings
+
+Recent activity
+
+Upcoming/overdue CAPA
+
+Global filters
+
+Use fictional data only.
+
+The dashboard must tell a clear story within 5 seconds.
+
+A user should immediately understand:
+
+"What requires attention?"
+
+"What sites are at risk?"
+
+"What findings are new?"
+
+"What CAPA actions are overdue?"
+
+---
+
+# SITES
+
+Make /sites a complete operational workspace.
+
+Support:
+
+* search
+* filters
+* sorting
+* status
+* risk
+* trial
+* region
+
+Site details should provide:
+
+overview
+
+risk trend
+
+findings
+
+participants
+
+CAPA
+
+activity
+
+---
+
+# PARTICIPANTS
+
+Use participant codes only.
+
+Never introduce real-looking personally identifiable information.
+
+Participant detail should show:
+
+overview
+
+visits
+
+dosing
+
+adverse events
+
+findings
+
+activity
+
+---
+
+# VISIT RECORD
+
+Create a polished form at:
+
+/visit-records/new
+
+Include:
+
+participant
+
+visit
+
+planned date
+
+actual date
+
+status
+
+notes
+
+mock protocol validation
+
+The validation UI must clearly communicate that it is a prototype.
+
+Example:
+
+Automated check
+
+FAIL
+
+Required window:
+
+Day 25-35
+
+Observed:
+
+Day 41
+
+Review required
+
+It must NOT automatically say:
+
+"Confirmed deviation"
+
+---
+
+# FINDINGS
+
+This is a core workflow.
+
+Improve:
+
+/findings
+
+/findings/[id]
+
+Clearly differentiate:
+
+Automated check failed
+
+from
+
+Deviation confirmed
+
+Finding detail should include:
+
+detection
+
+rule
+
+rule version
+
+evidence
+
+expected condition
+
+observed value
+
+review history
+
+classification
+
+owner
+
+status
+
+actions
+
+Use explicit mock states.
+
+---
+
+# PROTOCOL RULES
+
+Make:
+
+/protocol-rules
+
+/protocol-rules/[id]
+
+look like professional configuration management.
+
+Show:
+
+rule code
+
+name
+
+type
+
+version
+
+status
+
+effective date
+
+parameters
+
+change history
+
+Use structured mock configurations for:
+
+VISIT_WINDOW
+
+DOSE_CHECK
+
+REQUIRED_FIELD
+
+REPORTING_WINDOW
+
+Do not claim these are medically validated protocol rules.
+
+---
+
+# CAPA
+
+Make CAPA a serious workflow, not just another table.
+
+Create:
+
+CAPA list
+
+CAPA details
+
+timeline
+
+corrective action
+
+preventive action
+
+owner
+
+due date
+
+evidence
+
+verification
+
+approval
+
+progress
+
+Make status transitions visually clear.
+
+---
+
+# REPORTING
+
+Reports page should feel useful even though it is frontend-only.
+
+Create report cards:
+
+Site Risk Summary
+
+Findings Summary
+
+CAPA Status
+
+Protocol Check Activity
+
+Include filters.
+
+Buttons may open realistic preview dialogs or prototype export states.
+
+Do not pretend files were generated on a backend.
+
+---
+
+# AUDIT ACTIVITY
+
+Create an enterprise audit timeline.
+
+Make the UI visually robust.
+
+Include:
+
+timestamp
+
+user
+
+role
+
+action
+
+entity
+
+entity ID
+
+result
+
+Clearly label the records as prototype data.
+
+---
+
+# LOADING / EMPTY / ERROR UX
+
+Every major data page must have:
+
+loading skeleton
+
+empty state
+
+error state
+
+retry action
+
+No page should flash empty content before mock data loads.
+
+---
+
+# ACCESSIBILITY
+
+Audit the interface for:
+
+* semantic HTML
+* keyboard navigation
+* focus states
+* form labels
+* aria labels
+* tooltip accessibility
+* table accessibility
+* contrast
+* reduced-motion handling
+
+Do not rely exclusively on color.
+
+---
+
+# RESPONSIVENESS
+
+Use browser testing at:
+
+390px
+
+768px
+
+1024px
+
+1280px
+
+1440px
+
+Fix:
+
+* overflow
+* cramped tables
+* broken dialogs
+* mobile navigation
+* text wrapping
+* chart sizing
+* form layout
+* sticky elements
+
+---
+
+# PERFORMANCE
+
+Review:
+
+* unnecessary client components
+* unnecessary rerenders
+* large dependency usage
+* duplicated code
+* repeated mock-data transformations
+
+Prefer server components where appropriate.
+
+Use client components only where interaction requires them.
+
+---
+
+# CODE QUALITY
+
+Fix:
+
+* TypeScript errors
+* lint problems
+* invalid imports
+* dead components
+* unused variables
+* duplicated types
+* duplicated styles
+* bad naming
+* inconsistent file structure
+
+Do not suppress errors just to get a build.
+
+Do not use `any` as a shortcut.
+
+---
+
+# SECURITY-READY FRONTEND
+
+Even though authentication is mocked, structure the frontend so future authorization can be enforced centrally.
+
+Do not treat:
+
+hidden navigation items
+
+as security.
+
+Do not place secrets in client code.
+
+Do not hardcode API keys.
+
+Create clear interfaces for future auth/session state.
+
+---
+
+# BROWSER VERIFICATION
+
+After implementation:
+
+1. Start the development server.
+2. Open the application in the browser.
+3. Test every main route.
+4. Check navigation.
+5. Check forms.
+6. Check mobile layouts.
+7. Check desktop layouts.
+8. Check dialogs and dropdowns.
+9. Check tables and filters.
+10. Check browser console for errors.
+11. Fix all visible issues.
+12. Re-run verification after fixes.
+
+Use the browser to inspect the actual rendered result, not only source code.
+
+---
+
+# BUILD VERIFICATION
+
+Run:
+
+npm run lint
+
+npm run build
+
+and the appropriate test/type-check commands already present in the project.
+
+Fix every error.
+
+Do not claim success unless the commands actually pass.
+
+---
+
+# FINAL VISUAL QA
+
+Perform a final visual pass over:
+
+Login
+
+Dashboard
+
+Sites
+
+Site details
+
+Participants
+
+Participant details
+
+Visit record
+
+Dosing
+
+Adverse events
+
+Findings
+
+Finding details
+
+Protocol rules
+
+Protocol rule details
+
+CAPA
+
+CAPA details
+
+Reports
+
+Audit
+
+Notifications
+
+Settings
+
+The application should feel like one cohesive product.
+
+---
+
+# IMPORTANT CLINICAL LANGUAGE
+
+Never make unsupported medical or regulatory claims.
+
+Use phrases such as:
+
+"Automated check failed"
+
+"Review required"
+
+"Proposed classification"
+
+"Illustrative risk indicator"
+
+"Prototype data"
+
+Do not present mock calculations as validated clinical decisions.
+
+---
+
+# DEFINITION OF DONE
+
+The task is complete only when:
+
+* all intended routes load
+* navigation works
+* there are no broken links
+* TypeScript is clean
+* lint is clean
+* production build succeeds
+* no obvious browser console errors exist
+* responsive layouts work
+* forms work correctly in prototype mode
+* mock data is consistent
+* components are reusable
+* UI is visually polished
+* the app is ready to connect to Supabase later without redesigning the frontend architecture
+
+Do not stop after fixing one page.
+
+Inspect, implement, test, verify, and polish the entire frontend.
