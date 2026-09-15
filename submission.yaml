@@ -1,0 +1,12 @@
+project_name: "AegisTrial GCP Copilot"
+team_name: "The Forge"
+short_description: "An AI-powered Clinical Trial Risk Monitor and Protocol Deviation Detector ensuring ICH E6 GCP compliance."
+challenge_track: "P1"
+technologies_used:
+  - Next.js
+  - Tailwind CSS
+  - Node.js
+  - Drizzle ORM
+  - IBM watsonx
+repo_url: "https://github.com/HardikParmar-1111/bob-ai-hackathon-The-Forge"
+video_demo_url: ""

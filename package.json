@@ -2,13 +2,20 @@
   "name": "workspace",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {
-    "preinstall": "sh -c 'rm -f package-lock.json yarn.lock; case \"$npm_config_user_agent\" in pnpm/*) ;; *) echo \"Use pnpm instead\" >&2; exit 1 ;; esac'",
-    "build": "pnpm run typecheck && pnpm -r --if-present run build",
-    "typecheck:libs": "tsc --build",
-    "typecheck": "pnpm run typecheck:libs && pnpm -r --filter \"./artifacts/**\" --filter \"./scripts\" --if-present run typecheck"
-  },
   "private": true,
+  "workspaces": [
+    "src/artifacts/*",
+    "src/lib/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev:frontend",
+    "dev:frontend": "npm run dev --workspace=clinical-trial-risk-monitor",
+    "dev:backend": "npm run dev --workspace=api-server",
+    "dev:all": "node ./scripts/dev.mjs",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck:libs": "tsc --build",
+    "typecheck": "tsc --build && npm run typecheck --workspaces --if-present"
+  },
   "dependencies": {
     "@replit/connectors-sdk": "^0.4.3"
   },

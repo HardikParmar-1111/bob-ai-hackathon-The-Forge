@@ -1,0 +1,1765 @@
+You are working on the existing **Clinical Trial Risk Monitor** project.
+
+I have an already-built frontend that must be preserved.
+
+Your task is NOT to redesign the application from scratch.
+
+Your task is to:
+
+1. inspect the entire existing repository,
+2. identify why the current functionality is mock-only/broken,
+3. build the missing backend/database functionality,
+4. connect the existing frontend to persistent data,
+5. fix every broken workflow,
+6. test everything in the actual browser,
+7. keep the current visual design unless a UI change is required for functionality.
+
+The goal is a genuinely working full-stack prototype with persistent data and complete CRUD workflows.
+
+==================================================
+IMPORTANT: CURRENT PROJECT STATE
+================================
+
+The current application contains:
+
+* React + TypeScript frontend
+* Vite
+* Wouter routing
+* TanStack Query installed
+* React Hook Form
+* Zod
+* Express API server
+* Drizzle ORM package
+* PostgreSQL/DB infrastructure is intended but not implemented
+* Current UI is heavily based on mockData
+* src/lib/mockDataService.ts currently returns static read-only arrays
+* lib/db/src/schema/index.ts is currently empty
+* API server currently has essentially only a health endpoint
+
+This means the application is currently a frontend prototype.
+
+DO NOT pretend the existing mock actions are production functionality.
+
+Replace the necessary mock-only behavior with real persistence.
+
+==================================================
+PRIMARY RULE
+============
+
+PRESERVE THE EXISTING UI.
+
+Do not replace the visual design with a new dashboard.
+
+Do not remove working pages.
+
+Do not simplify the product.
+
+Do not create a second application.
+
+Modify the existing architecture so the current pages actually work.
+
+==================================================
+PHASE 1 — FULL CODEBASE AUDIT
+=============================
+
+Before changing code:
+
+Inspect the entire repository.
+
+Review:
+
+* artifacts/clinical-trial-risk-monitor/src/App.tsx
+* src/data/mockData.ts
+* src/lib/mockDataService.ts
+* all page components
+* all form components
+* API server
+* Drizzle configuration
+* database package
+* OpenAPI spec
+* package scripts
+* environment configuration
+* Replit configuration
+
+Identify all:
+
+* mock-only operations
+* read-only data services
+* dead buttons
+* dead navigation
+* incorrect filters
+* incorrect pagination
+* actions that only show toast messages
+* forms that don't persist records
+* static notifications
+* static CAPA
+* static protocol rules
+* static reports
+* fake role switching
+* non-functional related records
+* broken site detail tabs
+* incorrect counts
+* inconsistent mock data
+* client-only state that should persist
+* missing API endpoints
+* missing database tables
+* missing relationships
+
+Do not stop at the first problem.
+
+Create an internal dependency map before implementing.
+
+==================================================
+PHASE 2 — DATABASE
+==================
+
+Use PostgreSQL with the project's existing Drizzle setup.
+
+Do not create an unrelated ORM.
+
+Create real Drizzle schemas and migrations.
+
+At minimum implement:
+
+organizations
+
+users/profiles
+
+organization_members
+
+trials
+
+trial_sites
+
+site_members
+
+participants
+
+visit_records
+
+dosing_records
+
+adverse_events
+
+protocol_versions
+
+protocol_rules
+
+protocol_rule_versions
+
+rule_evaluations
+
+findings
+
+finding_comments
+
+finding_assignments
+
+capa_records
+
+capa_actions
+
+notifications
+
+notification_preferences
+
+audit_events
+
+reports
+
+report_exports
+
+files where needed
+
+role/access configuration
+
+Use UUID IDs or the project's established ID convention consistently.
+
+Add:
+
+* primary keys
+* foreign keys
+* unique constraints
+* check constraints
+* indexes
+* created_at
+* updated_at
+* created_by / updated_by where useful
+
+Create proper migration files.
+
+Never manually depend on a database schema that is not represented by migrations.
+
+==================================================
+PHASE 3 — RELATIONSHIPS
+=======================
+
+The relationships must actually work.
+
+At minimum:
+
+Organization
+↓
+Trial
+↓
+Site
+↓
+Participant
+↓
+Visits / Dosing / Adverse Events
+
+Protocol Rule
+↓
+Rule Evaluation
+↓
+Finding
+↓
+CAPA
+
+Site
+↓
+Activity
+
+Site
+↓
+Related Records
+
+User
+↓
+Role / Access
+↓
+Authorized organization/trial/site
+
+Finding
+↓
+Notifications
+
+Report
+↓
+Report export/download
+
+==================================================
+PHASE 4 — REAL API
+==================
+
+Expand the existing Express API.
+
+Do not delete the current health endpoint.
+
+Create real REST endpoints or a clearly structured equivalent.
+
+At minimum implement:
+
+GET /api/sites
+GET /api/sites/:id
+POST /api/sites
+PATCH /api/sites/:id
+DELETE /api/sites/:id
+
+GET /api/sites/:id/activity
+GET /api/sites/:id/participants
+GET /api/sites/:id/findings
+GET /api/sites/:id/capa
+GET /api/sites/:id/related-records
+
+GET /api/participants
+GET /api/participants/:id
+
+GET /api/visit-records
+POST /api/visit-records
+PATCH /api/visit-records/:id
+
+GET /api/dosing-records
+POST /api/dosing-records
+PATCH /api/dosing-records/:id
+
+GET /api/adverse-events
+GET /api/adverse-events/:id
+POST /api/adverse-events
+PATCH /api/adverse-events/:id
+DELETE /api/adverse-events/:id
+
+GET /api/protocol-rules
+GET /api/protocol-rules/:id
+POST /api/protocol-rules
+PATCH /api/protocol-rules/:id
+DELETE /api/protocol-rules/:id
+
+GET /api/findings
+GET /api/findings/:id
+POST /api/findings
+PATCH /api/findings/:id
+
+GET /api/capa
+GET /api/capa/:id
+POST /api/capa
+PATCH /api/capa/:id
+
+GET /api/notifications
+POST /api/notifications
+PATCH /api/notifications/:id
+POST /api/notifications/mark-all-read
+
+GET /api/reports
+GET /api/reports/:id
+POST /api/reports
+POST /api/reports/:id/preview
+POST /api/reports/:id/export
+GET /api/reports/:id/download
+
+GET /api/audit
+
+GET /api/users
+GET /api/roles
+PATCH /api/users/:id/role
+PATCH /api/users/:id/access
+
+Use proper HTTP methods.
+
+Return useful status codes.
+
+Return consistent JSON responses.
+
+Never return fake success if the database operation failed.
+
+==================================================
+PHASE 5 — VALIDATION
+====================
+
+Use Zod for request validation.
+
+Validate server-side.
+
+Do not trust only frontend validation.
+
+For every POST/PATCH:
+
+* required fields
+* field types
+* valid enums
+* dates
+* numbers
+* foreign key relationships
+* duplicate conditions
+* permissions
+* invalid IDs
+* malformed input
+
+Return structured validation errors.
+
+==================================================
+PHASE 6 — REPLACE MOCK DATA SERVICE
+===================================
+
+The current mockDataService is read-only.
+
+Do NOT keep the entire UI dependent on static arrays.
+
+Replace it with a service abstraction such as:
+
+clinicalTrialDataService
+
+with:
+
+getSites()
+getSite(id)
+createSite()
+updateSite()
+
+getParticipants()
+getParticipant(id)
+
+getVisitRecords()
+createVisitRecord()
+updateVisitRecord()
+
+getDosingRecords()
+createDosingRecord()
+updateDosingRecord()
+
+getAdverseEvents()
+createAdverseEvent()
+updateAdverseEvent()
+deleteAdverseEvent()
+
+getProtocolRules()
+getProtocolRule(id)
+createProtocolRule()
+updateProtocolRule()
+deleteProtocolRule()
+
+getFindings()
+getFinding(id)
+createFinding()
+updateFinding()
+
+getCAPA()
+getCAPADetail(id)
+createCAPA()
+updateCAPA()
+
+getNotifications()
+createNotification()
+markNotificationRead()
+markAllNotificationsRead()
+
+getReports()
+createReport()
+previewReport()
+exportReport()
+downloadReport()
+
+getAuditActivity()
+
+The UI should call these services instead of directly reading mock arrays.
+
+==================================================
+PHASE 7 — FIX SITES PAGE
+========================
+
+The Sites page is currently reported as broken for pages 1, 2, and 3.
+
+Fix pagination completely.
+
+Requirements:
+
+* page 1 works
+* page 2 works
+* page 3 works
+* next works
+* previous works
+* page count is calculated from actual data
+* page size is configurable
+* changing filters resets to page 1
+* changing search resets to page 1
+* sorting works
+* pagination works together with filtering
+* pagination works with searching
+* no duplicate rows
+* no missing rows
+* disabled previous/next states are correct
+
+If the dataset is database-backed, implement pagination server-side.
+
+Support:
+
+page
+
+pageSize
+
+search
+
+filter
+
+sortBy
+
+sortOrder
+
+Do not load all records unnecessarily when the dataset grows.
+
+==================================================
+PHASE 8 — FIX ALL SITE FILTERS
+==============================
+
+The site's filter options must be meaningful for site data.
+
+Do not use unrelated filter values.
+
+Implement appropriate site filters such as:
+
+Trial
+
+Region
+
+Risk level
+
+Site status
+
+Country/State where relevant
+
+Site type where relevant
+
+Owner/Manager if present in the schema
+
+The filter options should come from actual available site data or clearly defined configuration.
+
+Filtering must update the actual query/data.
+
+Example:
+
+Risk = High
+
+must show only High-risk sites.
+
+Changing Trial must show only that trial's sites.
+
+Do not create decorative dropdowns that do nothing.
+
+==================================================
+PHASE 9 — SITE DETAIL PAGE
+==========================
+
+When opening:
+
+/sites/:id
+
+make all site detail functionality real.
+
+Tabs/sections:
+
+Overview
+
+Findings
+
+Participants
+
+CAPA
+
+Activity
+
+Related Records
+
+Every section must query real related data.
+
+==================================================
+SITE ACTIVITY
+=============
+
+Activity must be built from actual audit/activity events.
+
+Examples:
+
+Visit record created
+
+Dosing record created
+
+Adverse event submitted
+
+Finding created
+
+Finding updated
+
+CAPA assigned
+
+CAPA completed
+
+Rule evaluation failed
+
+Protocol rule updated
+
+Report generated
+
+Show:
+
+timestamp
+
+actor
+
+action
+
+entity
+
+entity ID
+
+summary
+
+Do not hardcode one static activity array.
+
+==================================================
+SITE RELATED RECORDS
+====================
+
+When a Site is opened, related records must actually work.
+
+Related records should include appropriate records for that site:
+
+Visit records
+
+Dosing records
+
+Adverse events
+
+Participants
+
+Findings
+
+CAPA
+
+Protocol evaluations where applicable
+
+Clicking a related record must open the actual corresponding record/page.
+
+Do not show unrelated global mock records.
+
+==================================================
+PHASE 10 — ADVERSE EVENT FIX
+============================
+
+The current adverse-event creation flow does not actually add records.
+
+Fix it completely.
+
+When the user opens:
+
+/adverse-events/new
+
+and submits:
+
+1. validate the form
+2. POST to backend
+3. insert database record
+4. return created record
+5. update/invalidate frontend query
+6. redirect to adverse event list
+7. newly created event must appear
+8. event must also appear in:
+
+   * participant detail
+   * site detail
+   * related records
+   * activity/audit
+   * any applicable finding workflow
+
+The user must be able to refresh the browser and still see the new record.
+
+That proves persistence.
+
+Do not use local-only React state as the source of truth.
+
+==================================================
+PHASE 11 — VISIT RECORDS
+========================
+
+Make visit records persistent.
+
+On submit:
+
+* validate
+* save to DB
+* run applicable protocol checks where implemented
+* persist evaluation
+* create finding if configured rule fails
+* update site-related data
+* update participant history
+* write audit event
+* trigger notification where appropriate
+
+Do not automatically mark a failed check as a confirmed deviation.
+
+==================================================
+PHASE 12 — DOSING
+=================
+
+Make dosing records persistent.
+
+On submission:
+
+* validate dose
+* save
+* link participant/site
+* create audit event
+* run applicable deterministic dose rule if configured
+* create reviewable finding where a rule fails
+
+After refreshing the browser the dosing record must remain.
+
+==================================================
+PHASE 13 — PROTOCOL RULES
+=========================
+
+The Protocol Rules page currently does not actually add data.
+
+Implement:
+
+Create Rule
+
+Edit Rule
+
+Activate Rule
+
+Retire Rule
+
+View Rule
+
+Version Rule
+
+Delete only where safe and permitted
+
+Do not destroy historical versions.
+
+Create proper protocol_rule_versions records.
+
+A rule must contain:
+
+code
+
+name
+
+type
+
+description
+
+parameters
+
+default severity
+
+status
+
+effective date
+
+version
+
+created by
+
+updated by
+
+When creating a new version:
+
+keep the old version
+
+create the new version
+
+do not overwrite historical evaluation context.
+
+After creating a rule, the list must immediately update.
+
+Refresh the page and the rule must still exist.
+
+==================================================
+PHASE 14 — CAPA
+===============
+
+CAPA creation currently does not persist.
+
+Implement:
+
+Create CAPA
+
+Edit CAPA
+
+Assign owner
+
+Set due date
+
+Add corrective action
+
+Add preventive action
+
+Add evidence
+
+Change status
+
+Verify
+
+Complete
+
+Reopen
+
+The new CAPA must appear immediately in the UI and remain after refresh.
+
+CAPA should be linked to:
+
+finding
+
+site
+
+trial
+
+owner
+
+actions
+
+audit events
+
+notifications
+
+==================================================
+PHASE 15 — FINDINGS
+===================
+
+Make findings persistent.
+
+Implement:
+
+create
+
+view
+
+assign
+
+comment
+
+change status
+
+confirm
+
+reject
+
+resolve
+
+reopen
+
+create CAPA
+
+A failed rule evaluation should create:
+
+AUTOMATED_CHECK_FAILED
+
+not automatically:
+
+CONFIRMED_DEVIATION
+
+Keep:
+
+proposed severity
+
+final severity
+
+reviewer
+
+review timestamp
+
+review comment
+
+history
+
+==================================================
+PHASE 16 — RISK INDICATOR
+=========================
+
+If the dashboard contains risk values, do not hardcode every site score.
+
+Create a deterministic calculation service.
+
+Use a documented configurable model.
+
+The result should be reproducible.
+
+Store:
+
+site
+
+score
+
+model version
+
+calculation timestamp
+
+contributors
+
+For example contributors may include:
+
+open findings
+
+severity
+
+recurrence
+
+overdue CAPA
+
+recent finding activity
+
+Do not describe arbitrary demo weights as medically validated.
+
+==================================================
+PHASE 17 — NOTIFICATIONS
+========================
+
+Notifications are currently static and not insertable.
+
+Make notifications database-backed.
+
+When important events happen, create notifications.
+
+Examples:
+
+New finding
+
+Review requested
+
+CAPA assigned
+
+CAPA overdue
+
+Record submitted
+
+Report ready
+
+Implement:
+
+create
+
+read
+
+mark read
+
+mark all read
+
+delete/dismiss where appropriate
+
+Unread count must update without requiring a hardcoded number.
+
+The notification item should link to the correct entity.
+
+Example:
+
+New finding → /findings/:id
+
+CAPA assigned → /capa/:id
+
+Report ready → /reports/:id
+
+==================================================
+PHASE 18 — ACCESS ROLE
+======================
+
+The current role selector is frontend/localStorage demo behavior.
+
+Replace it with real access control architecture.
+
+Implement users and roles.
+
+At minimum:
+
+Risk Manager
+
+Site Administrator
+
+The database must store:
+
+user
+
+role
+
+organization
+
+trial/site scope
+
+The frontend should only display authorized functions.
+
+More importantly:
+
+BACKEND MUST enforce authorization.
+
+Do not rely on hiding UI controls.
+
+Example:
+
+Site Administrator:
+
+* only assigned site
+* cannot view other sites
+* cannot change global access
+* cannot approve privileged actions
+
+Risk Manager:
+
+* access authorized trial/site portfolio
+* view findings
+* manage oversight workflows
+
+Make the Settings → Access & Roles interface functional.
+
+Allow authorized users to:
+
+* view users
+* view role
+* update role
+* update site access
+
+Write audit event for every access/role change.
+
+==================================================
+PHASE 19 — REPORTS
+==================
+
+The Reports page currently has non-functional:
+
+Preview
+
+Download
+
+Export
+
+Export log
+
+Fix ALL of them.
+
+Implement real report workflow.
+
+Report types:
+
+Site Risk Summary
+
+Findings Summary
+
+CAPA Summary
+
+Protocol Evaluation Summary
+
+Audit Activity Summary
+
+When user selects Preview:
+
+* generate report data
+* return report preview
+* display real values from DB
+
+When user selects Export:
+
+* generate the selected format
+* CSV must be a valid downloadable CSV
+* PDF must be a valid downloadable PDF if PDF generation is supported
+
+When user selects Download:
+
+* download the generated report
+* use correct filename
+* correct MIME type
+
+Report export log must record:
+
+report
+
+requested by
+
+format
+
+timestamp
+
+status
+
+download status
+
+file/reference if applicable
+
+The UI must display real export history.
+
+Do not show a fake "Export complete" toast without generating a file.
+
+==================================================
+PHASE 20 — REPORT FILTERS
+=========================
+
+Report filters must actually change the report dataset.
+
+Support relevant filters:
+
+Trial
+
+Site
+
+Date range
+
+Severity where applicable
+
+Status where applicable
+
+Report type
+
+Do not show irrelevant filters on report types that don't use them.
+
+For example:
+
+A CAPA report should be filterable by CAPA status/date/site.
+
+An Audit report should be filterable by action/date/user/entity.
+
+==================================================
+PHASE 21 — AUDIT LOG
+====================
+
+Every important mutation must write an audit event.
+
+At minimum:
+
+create
+
+update
+
+delete/archive
+
+submit
+
+approve
+
+reject
+
+assign
+
+role changes
+
+rule changes
+
+CAPA transitions
+
+report generation
+
+report export
+
+notification changes
+
+The Audit page must query the real audit table.
+
+==================================================
+PHASE 22 — SEARCH / FILTER / SORT
+=================================
+
+Correct every page so filter controls correspond to the data.
+
+Do not reuse "All" filters blindly.
+
+For each page determine its valid filter dimensions.
+
+Sites:
+
+* trial
+* risk
+* status
+* region
+
+Participants:
+
+* site
+* enrollment status
+* record status
+
+Visit records:
+
+* site
+* visit status
+* participant
+* date
+
+Dosing:
+
+* site
+* treatment
+* status
+* date
+
+Adverse events:
+
+* site
+* severity
+* status
+* reporting status
+* date
+
+Findings:
+
+* site
+* severity
+* status
+* owner
+* finding type
+* date
+
+Protocol Rules:
+
+* trial
+* type
+* status
+* version
+
+CAPA:
+
+* site
+* status
+* owner
+* due status
+
+Reports:
+
+* report type
+* site
+* trial
+* date
+
+Notifications:
+
+* read status
+* type
+* date
+
+Audit:
+
+* actor
+* action
+* entity
+* date
+
+Every filter must modify the actual data query.
+
+==================================================
+PHASE 23 — QUERY STATE
+======================
+
+Use TanStack Query correctly.
+
+Implement:
+
+query keys
+
+mutations
+
+query invalidation
+
+loading states
+
+error states
+
+retry
+
+pagination
+
+cache invalidation
+
+After creating/updating/deleting a record:
+
+invalidate/update the appropriate queries.
+
+Do not require the user to reload the page manually.
+
+==================================================
+PHASE 24 — OPTIMISTIC UI
+========================
+
+Only use optimistic updates where failure can be safely rolled back.
+
+Otherwise:
+
+submit
+
+show loading
+
+server mutation
+
+success
+
+refresh/invalidate
+
+show success state
+
+Never make the UI say success before the server confirms success.
+
+==================================================
+PHASE 25 — ERROR HANDLING
+=========================
+
+Handle:
+
+404
+
+400
+
+401
+
+403
+
+409
+
+422
+
+500
+
+network error
+
+database failure
+
+validation failure
+
+Show useful user-facing messages.
+
+Do not expose raw SQL/database errors.
+
+==================================================
+PHASE 26 — LOADING / EMPTY STATES
+=================================
+
+Every data page must have:
+
+loading skeleton
+
+empty state
+
+error state
+
+retry
+
+No page should show stale static content after switching to database data.
+
+==================================================
+PHASE 27 — AUTHENTICATION
+=========================
+
+Implement proper authentication for the current architecture.
+
+If the project already has an auth provider configured, integrate it correctly.
+
+If not, create a secure server-side session/authentication approach compatible with the existing Replit architecture.
+
+Do not fake authentication using only localStorage.
+
+Do not trust a client-provided role.
+
+==================================================
+PHASE 28 — SECURITY
+===================
+
+Perform a security pass.
+
+Check:
+
+* authorization on every protected endpoint
+* IDOR protection
+* role escalation
+* input validation
+* SQL injection
+* XSS
+* unsafe file downloads
+* unsafe report access
+* unauthorized site access
+* unauthorized CAPA modification
+* unauthorized role changes
+
+Do not use admin/service credentials in browser code.
+
+Never trust:
+
+localStorage role
+
+URL IDs
+
+hidden buttons
+
+frontend filters
+
+==================================================
+PHASE 29 — FILE / REPORT SECURITY
+=================================
+
+Generated reports must only be downloadable by authorized users.
+
+Do not expose report files publicly unless intentionally configured.
+
+Use controlled paths/IDs.
+
+Do not allow a user to download another organization's report by changing an ID.
+
+==================================================
+PHASE 30 — SEED DATA
+====================
+
+Create a safe fictional seed dataset.
+
+Seed:
+
+2+ trials
+
+at least 6 sites
+
+at least 20 participants
+
+multiple visits
+
+multiple dosing records
+
+multiple adverse events
+
+multiple protocol rules
+
+multiple findings
+
+multiple CAPAs
+
+multiple notifications
+
+audit activity
+
+reports/export records
+
+Ensure the relationships are valid.
+
+Use fictional data only.
+
+==================================================
+PHASE 31 — SITE PAGINATION TEST
+===============================
+
+The Sites page MUST have enough seed records to prove pages 1, 2, and 3.
+
+Create enough site records for at least 3 pages.
+
+Then verify:
+
+Page 1
+
+Page 2
+
+Page 3
+
+Next
+
+Previous
+
+Search
+
+Filter
+
+Sort
+
+Changing filter resets page
+
+Changing search resets page
+
+Changing page preserves filter
+
+Direct query parameters work if used
+
+==================================================
+PHASE 32 — SITE DETAIL FUNCTIONALITY TEST
+=========================================
+
+Choose SITE-001.
+
+Verify:
+
+Overview works
+
+Participants work
+
+Findings work
+
+CAPA works
+
+Activity works
+
+Related Records work
+
+Now create a new adverse event for a participant belonging to SITE-001.
+
+Return to SITE-001.
+
+The adverse event must appear in:
+
+Related Records
+
+Activity
+
+Participant details
+
+Adverse Events page
+
+If a finding is created, it must appear in findings.
+
+==================================================
+PHASE 33 — CRUD PERSISTENCE TEST
+================================
+
+For every major entity perform:
+
+CREATE
+
+READ
+
+UPDATE
+
+READ AGAIN
+
+REFRESH PAGE
+
+READ AGAIN
+
+The record must still exist after refresh.
+
+Test:
+
+Site
+
+Participant where creation is supported
+
+Visit
+
+Dosing
+
+Adverse Event
+
+Protocol Rule
+
+Finding
+
+CAPA
+
+Notification
+
+Report
+
+==================================================
+PHASE 34 — REPORT TEST
+======================
+
+Create a real report.
+
+Preview it.
+
+Export CSV.
+
+Download CSV.
+
+Generate PDF if implemented.
+
+View export log.
+
+Refresh browser.
+
+The export history must remain.
+
+Verify downloaded file contents.
+
+==================================================
+PHASE 35 — ROLE TEST
+====================
+
+Test two users:
+
+Risk Manager
+
+Site Administrator
+
+Verify:
+
+Risk Manager can access authorized portfolio.
+
+Site Administrator can access assigned site.
+
+Site Administrator cannot directly access another site's data by URL.
+
+Site Administrator cannot modify restricted settings.
+
+Changing localStorage must NOT grant permissions.
+
+Changing URL IDs must NOT bypass authorization.
+
+==================================================
+PHASE 36 — BROWSER TESTING
+==========================
+
+You MUST test the actual deployed/local application through a browser.
+
+Test:
+
+login
+
+dashboard
+
+sites
+
+sites page 1
+
+sites page 2
+
+sites page 3
+
+site detail
+
+activity
+
+related records
+
+participants
+
+visit records
+
+new visit record
+
+dosing
+
+new dosing record
+
+adverse events
+
+new adverse event
+
+protocol rules
+
+new protocol rule
+
+edit protocol rule
+
+findings
+
+CAPA
+
+new CAPA
+
+notifications
+
+role/access
+
+reports
+
+preview
+
+export
+
+download
+
+export log
+
+audit
+
+settings
+
+Test mobile and desktop layouts.
+
+==================================================
+PHASE 37 — BUILD AND TEST
+=========================
+
+Run the project's real commands.
+
+At minimum:
+
+pnpm typecheck
+
+pnpm build
+
+and appropriate tests.
+
+If no tests exist, create important tests.
+
+Fix all compilation errors.
+
+Fix all runtime errors.
+
+Fix all browser console errors.
+
+Do not hide errors by suppressing TypeScript checks.
+
+Do not use `any` as a shortcut.
+
+==================================================
+PHASE 38 — FINAL VALIDATION
+===========================
+
+At the end, verify this workflow completely:
+
+Site Admin
+↓
+creates adverse event
+↓
+database insert succeeds
+↓
+record appears in adverse events
+↓
+record appears in participant
+↓
+record appears in site related records
+↓
+audit event created
+↓
+notification created when applicable
+
+Then:
+
+Site Admin
+↓
+submits visit
+↓
+rule evaluation
+↓
+failed check if applicable
+↓
+finding created
+↓
+Risk Manager notified
+↓
+Risk Manager reviews
+↓
+CAPA created
+↓
+CAPA assigned
+↓
+CAPA updated
+↓
+CAPA verified
+↓
+audit history updated
+
+Then:
+
+Risk Manager
+↓
+opens Reports
+↓
+selects report
+↓
+Preview
+↓
+Export
+↓
+Download
+↓
+Export history
+
+==================================================
+IMPORTANT
+=========
+
+Do NOT simply add local React state to make the UI appear functional.
+
+Do NOT use hardcoded arrays as the production source of truth.
+
+Do NOT return fake success responses.
+
+Do NOT leave mock service calls pretending they are backend operations.
+
+Do NOT rebuild the entire UI.
+
+Do NOT replace working components unnecessarily.
+
+Do NOT break the existing visual design.
+
+==================================================
+DEFINITION OF DONE
+==================
+
+The work is NOT finished until:
+
+* Sites pagination pages 1–3 works
+* site filters actually filter
+* site activity is real
+* site related records are real
+* adverse events can be created and persist
+* dosing can be created and persist
+* visits can be created and persist
+* protocol rules can be created and persist
+* rule versions work
+* findings persist
+* CAPA can be created and persists
+* notifications can be created and persist
+* role/access controls actually affect backend authorization
+* report preview works
+* report export works
+* downloaded files are real
+* export log works
+* audit log is persistent
+* all filters match their page functionality
+* data survives browser refresh
+* all major pages use real backend data
+* authorization is enforced server-side
+* migrations work
+* database schema is complete
+* API endpoints work
+* validation works
+* errors are handled
+* TypeScript passes
+* build passes
+* browser testing passes
+
+After implementing everything, perform one final end-to-end QA pass and fix every remaining issue you discover.
+
+Do not stop after making code changes.
+
+Inspect → implement → migrate → connect frontend → test → browser verify → fix → retest → build → final QA.
